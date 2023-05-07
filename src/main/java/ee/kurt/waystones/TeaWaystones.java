@@ -19,9 +19,19 @@ public class TeaWaystones implements CommandExecutor {
             // /tw setname <id> <name>
                 switch (args[0].toLowerCase(Locale.ROOT)) {
                     case "setname":
-                        if(args.length == 3) {
-                            String id = args[1];
-                            String name = args[2];
+                        if(args.length == 2) {
+                            String name = args[1];
+                            String id = "";
+                            for (String path : Waystones.locationconf.getConfigurationSection("locations").getKeys(false)) {
+                                if(((Player) sender).getLocation().distance(Waystones.locationconf.getLocation("locations." + path + ".location").toCenterLocation()) < 2){
+                                    id = path;
+                                }
+                            }
+                            if(id == ""){
+                                sender.sendMessage("§cThere is no waystone near you.");
+                                return false;
+                            }
+
                             try {
                                 Waystones.locationconf.load(Waystones.locFile);
                                 Waystones.locationconf.set("locations." + id + ".name", name);
@@ -29,11 +39,11 @@ public class TeaWaystones implements CommandExecutor {
                             } catch (IOException | InvalidConfigurationException exc) {
                                 exc.printStackTrace();
                             }
-                            sender.sendMessage("§aSuccsessfully set the name of the waypoint §o"+id+"§a to §o"+name+"§a.");
+                            sender.sendMessage("§aSuccsessfully set the name of the Waystone §o"+id+"§a to §o"+name+"§a.");
                             return true;
                         }
                     default:
-                        sender.sendMessage("§cSub-Command not found. Syntax: /tw setname <id> <name>");
+                        sender.sendMessage("§cSub-Command not found. Syntax: /tw setname <name>");
                         break;
             }
         }

@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -22,6 +23,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.PluginLogger;
 
 import java.io.IOException;
@@ -51,7 +54,7 @@ public class Events implements Listener {
                     Location l = Waystones.locationconf.getLocation("locations." + path + ".location");
 
                    // System.out.println("[Waystones Debugger] "+loc.equals(l)+" | "+l.toBlockLocation().equals(loc.toBlockLocation())+" | "+(l.getBlockX() == loc.getBlockX() && l.getBlockY() == loc.getBlockY() && l.getBlockZ() == loc.getBlockZ() && l.getWorld() == loc.getWorld() ));
-                    if (loc.equals(l)) { // checks if the current waystone is the clicked waystone
+                    if (loc.equals(l)) { // checks if the current waystone is the clicked block
                         e.setCancelled(true);
                         List<String> visitedBy = Waystones.locationconf.getStringList("locations." + path + ".visitedBy");
                         if (visitedBy.contains(p.getUniqueId().toString())) {
@@ -62,6 +65,7 @@ public class Events implements Listener {
                             Waystones.locationconf.set("locations." + path + ".visitedBy", visitedBy);
                             Waystones.locationconf.save(Waystones.locFile);
                         }
+
                         Waystones.openMenu(p, path);
                     }
                 }
@@ -104,19 +108,26 @@ public class Events implements Listener {
             //System.out.println("[Waystones Debugger] Player [" + p.getUniqueId() + "] clicked on the following waystone:");
 
             ItemMeta meta = item.getItemMeta();
+            NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
+            PersistentDataContainer container = meta.getPersistentDataContainer();
             if(meta != null){
-                List<String> lore = meta.getLore();
-                String idstr = lore.get(0);
-                idstr = idstr.replace("ID: ", "");
+                if(container.has(key, PersistentDataType.STRING)) {
 
-                try {
-                    Waystones.locationconf.load(Waystones.locFile);
+                  //  List<String> lore = meta.getLore();
+                  //  String idstr = lore.get(0);
+                  //  idstr = idstr.replace("ID: ", "");
+                    String idstr = container.get(key, PersistentDataType.STRING);
+                    try {
+                        Waystones.locationconf.load(Waystones.locFile);
 
-                    Location loc = Waystones.locationconf.getLocation("locations."+idstr+".tplocation");
-                    p.teleport(loc);
+                        Location loc = Waystones.locationconf.getLocation("locations."+idstr+".tplocation");
+                        p.teleport(loc);
 
-                } catch (IOException | InvalidConfigurationException exc) {
-                    exc.printStackTrace();
+                    } catch (IOException | InvalidConfigurationException exc) {
+                        exc.printStackTrace();
+                    }
+                }else{
+                    PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Waystone in menu has no waystoneid.");
                 }
             }else{
                 PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Meta is null.");
