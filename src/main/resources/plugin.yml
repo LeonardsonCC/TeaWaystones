@@ -1,0 +1,12 @@
+main: ee.kurt.waystones.Waystones
+name: TeaWaystones
+version: 1.0.0
+description: Waystones Plugin
+api-version: 1.17
+author: Kurty00
+authors:
+  - Kurty00
+commands:
+  tw:
+    usage: /tw
+    discription: TeaWaystones Commands.
