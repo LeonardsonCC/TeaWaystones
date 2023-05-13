@@ -1,0 +1,20 @@
+kind: pipeline
+name: default
+
+steps:
+- name: build
+  image: maven:3-openjdk-17
+  commands:
+  - mvn clean 
+  - mvn install -DskipTests=true -Dmaven.javadoc.skip=true
+  - ls -R target
+
+- name: upload
+  image: vividboarder/drone-webdav
+  settings:
+    file: target/Waystones-1.0.1.jar
+    destination: https://cidav.tardis.systems/
+    username: 
+      from_secret: cidavuser
+    password:
+      from_secret: cidavpass
