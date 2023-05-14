@@ -13,7 +13,7 @@ steps:
   image: vividboarder/drone-webdav
   settings:
     file: target/Waystones-1.0.1.jar
-    destination: https://cidav.tardis.systems/
+    destination: https://cidav.tardis.systems/TeaWaystones
     username: 
       from_secret: cidavuser
     password:
