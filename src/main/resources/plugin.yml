@@ -1,6 +1,6 @@
 main: ee.kurt.waystones.Waystones
 name: TeaWaystones
-version: 1.0.0
+version: 1.0.2
 description: Waystones Plugin
 api-version: 1.17
 author: Kurty00
