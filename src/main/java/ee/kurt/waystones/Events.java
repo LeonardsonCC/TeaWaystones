@@ -81,13 +81,15 @@ public class Events implements Listener {
         Location loc = e.getBlockPlaced().getLocation();
         String id = Waystones.generateString(new Random(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 10);
 
-        NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
-        PersistentDataContainer container = meta.getPersistentDataContainer();
+        ItemMeta meta = e.getItemInHand().getItemMeta();
 
         if(meta != null){
+
+            NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
+            PersistentDataContainer container = meta.getPersistentDataContainer();
             if(container.has(key, PersistentDataType.STRING)) {
-                    String id = container.get(key, PersistentDataType.STRING);
-                    if(id == "waystone"){
+                    String itemid = container.get(key, PersistentDataType.STRING);
+                    if(itemid == "waystone"){
                         try {
                             Waystones.locationconf.load(Waystones.locFile);
 
@@ -100,10 +102,6 @@ public class Events implements Listener {
                         }
                     }
             }
-        }
-
-        if(e.getItemInHand().displayName().toString().contains("Waystone")){
-            
         }
     }
 
