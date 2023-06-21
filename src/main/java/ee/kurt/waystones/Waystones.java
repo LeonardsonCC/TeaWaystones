@@ -28,7 +28,7 @@ public class Waystones extends JavaPlugin {
 
       public static File path = new File("plugins//TeaWaystones");
       public static File locFile = new File("plugins//TeaWaystones//locations.yml");
-      public static YamlConfiguration locationconf = YamlConfiguration.loadConfiguration(locFile);
+      public static YamlConfiguration locationconf;
       public static Waystones instance;
 
 
@@ -81,7 +81,7 @@ public class Waystones extends JavaPlugin {
       public void onEnable() {
             if(!path.exists()) path.mkdir();
             if(!locFile.exists()) this.saveResource("locations.yml", true);
-
+            locationconf = YamlConfiguration.loadConfiguration(locFile);
             instance = this;
 
             getCommand("tw").setExecutor(new TeaWaystones());
