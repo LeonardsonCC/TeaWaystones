@@ -90,7 +90,8 @@ public class Events implements Listener {
             if(container.has(key, PersistentDataType.STRING)) {
                     String itemid = container.get(key, PersistentDataType.STRING);
                     PluginLogger.getLogger("TeaWaystones").log(Level.INFO, itemid);
-                    if(itemid == "waystone"){
+                    if(itemid.equals("waystone")){
+                        PluginLogger.getLogger("TeaWaystones").log(Level.INFO, "%s is placing a waystone", p.getName());
                         try {
                             Waystones.locationconf.load(Waystones.locFile);
 
