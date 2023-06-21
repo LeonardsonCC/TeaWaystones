@@ -89,6 +89,7 @@ public class Events implements Listener {
             PersistentDataContainer container = meta.getPersistentDataContainer();
             if(container.has(key, PersistentDataType.STRING)) {
                     String itemid = container.get(key, PersistentDataType.STRING);
+                    PluginLogger.getLogger("TeaWaystones").log(Level.INFO, itemid);
                     if(itemid == "waystone"){
                         try {
                             Waystones.locationconf.load(Waystones.locFile);
