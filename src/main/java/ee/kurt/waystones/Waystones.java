@@ -90,6 +90,8 @@ public class Waystones extends JavaPlugin {
             ItemStack waystone = new ItemStack(Material.BEACON, 1);
             ItemMeta meta = waystone.getItemMeta();
             meta.setDisplayName("§aWaystone");
+            NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
+            meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, "waystone");
             waystone.setItemMeta(meta);
             ShapedRecipe waystonerec = new ShapedRecipe(waystone);
 

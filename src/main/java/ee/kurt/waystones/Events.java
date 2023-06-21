@@ -81,16 +81,26 @@ public class Events implements Listener {
         Location loc = e.getBlockPlaced().getLocation();
         String id = Waystones.generateString(new Random(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 10);
 
-        if(e.getItemInHand().displayName().toString().contains("Waystone")){
-            try {
-                Waystones.locationconf.load(Waystones.locFile);
+        ItemMeta meta = e.getItemInHand().getItemMeta();
 
-                Waystones.locationconf.set("locations."+id+".location", loc);
-                Waystones.locationconf.set("locations."+id+".tplocation", p.getLocation());
+        if(meta != null){
 
-                Waystones.locationconf.save(Waystones.locFile);
-            } catch (IOException | InvalidConfigurationException exc) {
-                exc.printStackTrace();
+            NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            if(container.has(key, PersistentDataType.STRING)) {
+                    String itemid = container.get(key, PersistentDataType.STRING);
+                    if(itemid.equals("waystone")){
+                        try {
+                            Waystones.locationconf.load(Waystones.locFile);
+
+                            Waystones.locationconf.set("locations."+id+".location", loc);
+                            Waystones.locationconf.set("locations."+id+".tplocation", p.getLocation());
+
+                            Waystones.locationconf.save(Waystones.locFile);
+                        } catch (IOException | InvalidConfigurationException exc) {
+                            exc.printStackTrace();
+                        }
+                    }
             }
         }
     }
@@ -138,7 +148,6 @@ public class Events implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e){
         if(e.getBlock().getType() == Material.BEACON) {
-            //System.out.println("[Waystones Debugger] Block Break Event.");
 
             try {
                 Waystones.locationconf.load(Waystones.locFile);
@@ -147,11 +156,12 @@ public class Events implements Listener {
                     Location loc = e.getBlock().getLocation();
 
                     if(loc.equals(l)){
-                        //System.out.println("[Waystones Debugger] Break: "+path);
                         e.setDropItems(false);
                         ItemStack waystone = new ItemStack(Material.BEACON, 1);
                         ItemMeta meta = waystone.getItemMeta();
                         meta.setDisplayName("§aWaystone");
+                        NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
+                        meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, "waystone");
                         waystone.setItemMeta(meta);
                         loc.getWorld().dropItem(loc, waystone);
                         Waystones.locationconf.set("locations." + path, null);
