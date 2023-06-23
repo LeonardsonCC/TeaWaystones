@@ -93,7 +93,7 @@ public class Waystones extends JavaPlugin {
             NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
             meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, "waystone");
             waystone.setItemMeta(meta);
-            ShapedRecipe waystonerec = new ShapedRecipe(waystone);
+            ShapedRecipe waystonerec = new ShapedRecipe(key, waystone);
 
             waystonerec.shape("OEO","EBE","OCO");
 
