@@ -1,7 +1,6 @@
 package ee.kurt.waystones;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -16,11 +15,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -41,7 +38,7 @@ public class Waystones extends JavaPlugin {
             return new String(text);
       }
 
-      public static void openMenu(Player p, String currentWaystoneId){
+      public static void openMenu(Player p, String currentWaystoneId, int page){
             Inventory inv = Bukkit.createInventory(p,9*6, "Waystones");
 
             try {
@@ -51,25 +48,42 @@ public class Waystones extends JavaPlugin {
                         String name = locationconf.getString("locations." + path + ".name");
                         List<String> visitedBy = Waystones.locationconf.getStringList("locations." + path + ".visitedBy");
                         if (visitedBy.contains(p.getUniqueId().toString())) {
-                             // System.out.println("[Waystones Debugger] Menu: Player [" + p.getUniqueId() + "] has already visited the waystone ["+path+"].");
-                              ItemStack item = new ItemStack(Material.BEACON);
-                              item.setAmount(1);
-                              ItemMeta meta = item.getItemMeta();
-                              NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
-                              meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, path);
-                              meta.setDisplayName("§6Waystone - "+name);
-                              List<String> lore = new ArrayList<>();
-                              //lore.add(currentWaystoneId+" - "+path);
-                              //lore.add("ID: "+path);
-                              if(currentWaystoneId.equals(path)) {
+                              System.out.println((i % 54 == 0) + " | " + i);
+                              if(!(i % 54 == 0 && i > 0)) {
+                                    // System.out.println("[Waystones Debugger] Menu: Player [" + p.getUniqueId() + "] has already visited the waystone ["+path+"].");
+                                    ItemStack item = new ItemStack(Material.BEACON);
+                                    item.setAmount(1);
+                                    ItemMeta meta = item.getItemMeta();
+                                    NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
+                                    meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, path);
+                                    meta.setDisplayName("§6Waystone - " + name);
+                                    List<String> lore = new ArrayList<>();
+                                    //lore.add(currentWaystoneId+" - "+path);
+                                    //lore.add("ID: "+path);
+                                    if (currentWaystoneId.equals(path)) {
+                                          meta.addEnchant(Enchantment.MENDING, 1, false);
+                                          meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                          lore.add("§cYou are here.");
+                                    }
+                                    meta.setLore(lore);
+                                    item.setItemMeta(meta);
+                                    inv.setItem(i, item);
+                                    i++;
+                              } else if(i==54) {
+                                    System.out.println("Adding Nav Arrow...");
+                                    inv.clear(53);
+                                    ItemStack item = new ItemStack(Material.TIPPED_ARROW);
+                                    item.setAmount(1);
+                                    ItemMeta meta = item.getItemMeta();
+                                    NamespacedKey key = new NamespacedKey(Waystones.instance, "navarrow");
+                                    meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, page+1);
+                                    meta.setDisplayName("§aNext Page");
                                     meta.addEnchant(Enchantment.MENDING, 1, false);
                                     meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                                    lore.add("§cYou are here.");
+                                    item.setItemMeta(meta);
+                                    inv.setItem(i-1, item);
+                                    i++;
                               }
-                              meta.setLore(lore);
-                              item.setItemMeta(meta);
-                              inv.setItem(i, item);
-                              i++;
                         }
                   }
                   p.openInventory(inv);
@@ -84,7 +98,7 @@ public class Waystones extends JavaPlugin {
             locationconf = YamlConfiguration.loadConfiguration(locFile);
             instance = this;
 
-            getCommand("tw").setExecutor(new TeaWaystones());
+            getCommand("tw").setExecutor(new twCommand());
             Bukkit.getPluginManager().registerEvents(new Events(), this);
 
             ItemStack waystone = new ItemStack(Material.BEACON, 1);

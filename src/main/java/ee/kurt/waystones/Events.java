@@ -66,7 +66,7 @@ public class Events implements Listener {
                             Waystones.locationconf.save(Waystones.locFile);
                         }
 
-                        Waystones.openMenu(p, path);
+                        Waystones.openMenu(p, path, 0);
                     }
                 }
             } catch (IOException | InvalidConfigurationException exc) {
@@ -119,8 +119,8 @@ public class Events implements Listener {
 
             ItemMeta meta = item.getItemMeta();
             NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
-            PersistentDataContainer container = meta.getPersistentDataContainer();
             if(meta != null){
+                PersistentDataContainer container = meta.getPersistentDataContainer();
                 if(container.has(key, PersistentDataType.STRING)) {
 
                   //  List<String> lore = meta.getLore();
@@ -137,6 +137,10 @@ public class Events implements Listener {
                         exc.printStackTrace();
                     }
                 }else{
+                    PersistentDataContainer arrowcontainer = meta.getPersistentDataContainer();
+
+                    int pageid = container.get(new NamespacedKey(Waystones.instance, "navarrow"), PersistentDataType.INTEGER);
+                    Waystones.openMenu(p, "", pageid);
                     PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Waystone in menu has no waystoneid.");
                 }
             }else{
