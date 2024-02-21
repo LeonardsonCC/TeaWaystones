@@ -1,10 +1,12 @@
 package ee.kurt.waystones;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.kyori.adventure.text.format.*;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -66,7 +68,7 @@ public class Events implements Listener {
                             Waystones.locationconf.save(Waystones.locFile);
                         }
 
-                        Waystones.openMenu(p, path);
+                        Waystones.openMenu(p, path, 0);
                     }
                 }
             } catch (IOException | InvalidConfigurationException exc) {
@@ -77,6 +79,9 @@ public class Events implements Listener {
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent e){
+        if(e.isCancelled()){
+            return;
+        }
         Player p = e.getPlayer();
         Location loc = e.getBlockPlaced().getLocation();
         String id = Waystones.generateString(new Random(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 10);
@@ -112,20 +117,15 @@ public class Events implements Listener {
 
         //System.out.println("[Waystones Debugger] Inv Click Event. "+p.getUniqueId() + " | "+item.getType());
 
-
         if(e.getView().getTitle().contains("Waystones")){
             e.setCancelled(true);
             //System.out.println("[Waystones Debugger] Player [" + p.getUniqueId() + "] clicked on the following waystone:");
 
             ItemMeta meta = item.getItemMeta();
             NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
-            PersistentDataContainer container = meta.getPersistentDataContainer();
-            if(meta != null){
+            if(meta != null) {
+                PersistentDataContainer container = meta.getPersistentDataContainer();
                 if(container.has(key, PersistentDataType.STRING)) {
-
-                  //  List<String> lore = meta.getLore();
-                  //  String idstr = lore.get(0);
-                  //  idstr = idstr.replace("ID: ", "");
                     String idstr = container.get(key, PersistentDataType.STRING);
                     try {
                         Waystones.locationconf.load(Waystones.locFile);
@@ -136,8 +136,13 @@ public class Events implements Listener {
                     } catch (IOException | InvalidConfigurationException exc) {
                         exc.printStackTrace();
                     }
-                }else{
-                    PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Waystone in menu has no waystoneid.");
+                }
+                NamespacedKey nakey = new NamespacedKey(Waystones.instance, "navarrow");
+                if (container.has(nakey, PersistentDataType.INTEGER)){
+                    PersistentDataContainer arrowcontainer = meta.getPersistentDataContainer();
+                    int pageid = arrowcontainer.get(nakey, PersistentDataType.INTEGER);
+                    System.out.println(pageid);
+                    Waystones.openMenu(p, "", pageid);
                 }
             }else{
                 PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Meta is null.");
@@ -147,6 +152,9 @@ public class Events implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e){
+        if(e.isCancelled()){
+            return;
+        }
         if(e.getBlock().getType() == Material.BEACON) {
 
             try {
@@ -159,7 +167,7 @@ public class Events implements Listener {
                         e.setDropItems(false);
                         ItemStack waystone = new ItemStack(Material.BEACON, 1);
                         ItemMeta meta = waystone.getItemMeta();
-                        meta.setDisplayName("§aWaystone");
+                        meta.displayName(Component.text("Waystone").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
                         NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
                         meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, "waystone");
                         waystone.setItemMeta(meta);

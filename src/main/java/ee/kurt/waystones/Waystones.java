@@ -1,7 +1,10 @@
 package ee.kurt.waystones;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -16,13 +19,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Waystones extends JavaPlugin {
 
@@ -34,48 +33,143 @@ public class Waystones extends JavaPlugin {
 
       public static String generateString(Random rng, String characters, int length) {
             char[] text = new char[length];
-            for (int i = 0; i < length; i++)
-            {
+            for (int i = 0; i < length; i++) {
                   text[i] = characters.charAt(rng.nextInt(characters.length()));
             }
             return new String(text);
       }
 
-      public static void openMenu(Player p, String currentWaystoneId){
-            Inventory inv = Bukkit.createInventory(p,9*6, "Waystones");
+      public static void openMenu(Player p, String currentWaystoneId, int page){
+            Inventory inv = Bukkit.createInventory(p, 9*6, Component.text("Waystones").color(TextColor.color(0,0,0)));
 
             try {
                   locationconf.load(locFile);
                   int i = 0;
-                  for (String path : locationconf.getConfigurationSection("locations").getKeys(false)) {
+                  List<String> ss = locationconf.getConfigurationSection("locations").getKeys(false).stream().sorted(Waystones::compareWaystone).toList();
+                  List<List<String>> lss = getSubsetsBySize(ss, 53);
+                  // printSetList(lss);
+                  if(lss.size() < page+1){
+                        p.sendMessage(Component.text("Error: Page not found.").color(TextColor.color(255,0,0)));
+                        return;
+                  }
+                  for (String path : lss.get(page)) {
                         String name = locationconf.getString("locations." + path + ".name");
                         List<String> visitedBy = Waystones.locationconf.getStringList("locations." + path + ".visitedBy");
-                        if (visitedBy.contains(p.getUniqueId().toString())) {
-                             // System.out.println("[Waystones Debugger] Menu: Player [" + p.getUniqueId() + "] has already visited the waystone ["+path+"].");
-                              ItemStack item = new ItemStack(Material.BEACON);
-                              item.setAmount(1);
-                              ItemMeta meta = item.getItemMeta();
-                              NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
-                              meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, path);
-                              meta.setDisplayName("§6Waystone - "+name);
-                              List<String> lore = new ArrayList<>();
-                              //lore.add(currentWaystoneId+" - "+path);
-                              //lore.add("ID: "+path);
-                              if(currentWaystoneId.equals(path)) {
-                                    meta.addEnchant(Enchantment.MENDING, 1, false);
-                                    meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                                    lore.add("§cYou are here.");
+                        boolean isPublic = locationconf.getBoolean("locations." + path + ".public");
+                        if (visitedBy.contains(p.getUniqueId().toString()) || isPublic) {
+                              if(true) {
+                                    ItemStack item = new ItemStack(Material.BEACON);
+                                    item.setAmount(1);
+                                    ItemMeta meta = item.getItemMeta();
+                                    NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
+                                    meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, path);
+                                    meta.displayName(Component.text("Waystone - "+name).color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+                                    List<Component> lore = new ArrayList<>();
+                                    if(p.hasPermission("waystones.menu.seeWaystoneIds")){
+                                          lore.add(Component.text("ID: "+path).color(NamedTextColor.GRAY));
+                                    }
+                                    if(isPublic){
+                                          lore.add(Component.text("Public").color(NamedTextColor.DARK_PURPLE).decoration(TextDecoration.ITALIC, false));
+                                    }
+                                    if (currentWaystoneId.equals(path)) {
+                                          meta.addEnchant(Enchantment.MENDING, 1, false);
+                                          meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                          lore.add(Component.text("You are here.").color(TextColor.color(145, 229, 110)).decoration(TextDecoration.ITALIC, false));
+                                    }
+                                    meta.lore(lore);
+                                    item.setItemMeta(meta);
+                                    inv.setItem(i, item);
+                                    i++;
                               }
-                              meta.setLore(lore);
-                              item.setItemMeta(meta);
-                              inv.setItem(i, item);
-                              i++;
+
+
                         }
                   }
+
+                  inv.clear(53);
+                  ItemStack item = new ItemStack(Material.TIPPED_ARROW);
+                  item.setAmount(1);
+                  ItemMeta meta = item.getItemMeta();
+                  NamespacedKey key = new NamespacedKey(Waystones.instance, "navarrow");
+
+                  if(lss.get(page).size() == 53) {
+                        meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, page+1);
+                        meta.displayName(Component.text("Next Page").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+                  } else {
+                        meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, 0);
+                        meta.displayName(Component.text("First Page").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+                  }
+                  meta.addEnchant(Enchantment.MENDING, 1, false);
+                  meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                  meta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
+                  item.setItemMeta(meta);
+                  inv.setItem(53, item);
+                  i++;
+
                   p.openInventory(inv);
             } catch (IOException | InvalidConfigurationException exc) {
                   exc.printStackTrace();
             }
+      }
+
+      public static int compareWaystone(String w1, String w2){
+            if(w1 == null || w2 == null){
+                  return 0;
+            }
+            int result = 0;
+            try {
+                  w1 = locationconf.getString("locations." + w1 + ".name");
+                  w2 = locationconf.getString("locations." + w2 + ".name");
+                  if(w1 == null || w2 == null){
+                        return 0;
+                  }
+                  result = w1.compareTo(w2);
+            }catch (Exception e){
+                  e.printStackTrace();
+            } finally {
+                  return result;
+            }
+      }
+
+
+      public static List<List<String>> getSubsetsBySize(List<String> set, int size) {
+            List<String> seta = new ArrayList<>(set); // Convert set to list
+            List<List<String>> ret = new ArrayList<>();
+            List<String> tmp = new ArrayList<>();
+
+            for (int i = 0; i < seta.size(); i++) {
+                  if (tmp.size() == size) {
+
+                        ret.add(new ArrayList<>(tmp));
+                        tmp.clear();
+                  }
+                  tmp.add(seta.get(i));
+            }
+
+            if (!tmp.isEmpty()) {
+                  ret.add(new ArrayList<>(tmp)); // Add the last subset
+            }
+            return ret;
+      }
+
+
+      public static void printSet(List<String> set){
+            System.out.println("=== SET ===");
+            for(String e : set){
+                  System.out.println(e);
+            }
+            System.out.println("=== END SET ===");
+      }
+      public static void printSetList(List<List<String>> set){
+            System.out.println("=== SET ===");
+            for(List<String> e : set){
+                  System.out.println("  === SUBSET ===");
+                  for(String s : e) {
+                        System.out.println(s);
+                  }
+                  System.out.println("  === END SUBSET ===");
+            }
+            System.out.println("=== END SET ===");
       }
 
       public void onEnable() {
@@ -84,12 +178,12 @@ public class Waystones extends JavaPlugin {
             locationconf = YamlConfiguration.loadConfiguration(locFile);
             instance = this;
 
-            getCommand("tw").setExecutor(new TeaWaystones());
+            getCommand("tw").setExecutor(new twCommand());
             Bukkit.getPluginManager().registerEvents(new Events(), this);
 
             ItemStack waystone = new ItemStack(Material.BEACON, 1);
             ItemMeta meta = waystone.getItemMeta();
-            meta.setDisplayName("§aWaystone");
+            meta.displayName(Component.text("Waystone").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
             NamespacedKey key = new NamespacedKey(Waystones.instance, "id");
             meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, "waystone");
             waystone.setItemMeta(meta);

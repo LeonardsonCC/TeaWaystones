@@ -8,5 +8,5 @@ authors:
   - Kurty00
 commands:
   tw:
-    usage: /tw
+    usage: /tw setname <name>   /tw setpublic <true/false>   /tw openui [page]   /tw list
     discription: TeaWaystones Commands.
