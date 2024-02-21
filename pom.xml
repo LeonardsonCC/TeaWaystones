@@ -6,7 +6,7 @@
 
     <groupId>ee.kurt.waystones</groupId>
     <artifactId>Waystones</artifactId>
-    <version>1.0.3-debug</version>
+    <version>1.0.3</version>
 
 
     <properties>
