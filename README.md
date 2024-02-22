@@ -19,5 +19,7 @@ To rename a Waystone, you need to be standing directly next to one and then use 
 |-|-|-|
 |`/tw setname <name>`||sets the name of the waystone next to you|
 |`/tw list`|`waystones.command.list`|List all waystones with their location and the uuids of the players who visited the waystone.|
-|`/tw setpublic <true/false>`||Changes if the waystone next to you can be teleported to without having visited it.|
+|`/tw setpublic <true/false>`|`waystones.command.setpublic`|Changes if the waystone next to you can be teleported to without having visited it.|
 |`/tw openui [page]`|`waystones.command.openui`|Opens the waystone menu as if you interacted with a waystone.|
+||`waystones.menu.seeWaystoneIds`|Players with this permission will see the IDs of waystones in the menu.|
+
