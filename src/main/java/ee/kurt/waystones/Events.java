@@ -32,6 +32,7 @@ import org.bukkit.plugin.PluginLogger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -44,7 +45,7 @@ public class Events implements Listener {
 
 
         Player p = e.getPlayer();
-        Location loc = e.getClickedBlock().getLocation();
+        Location loc = Objects.requireNonNull(e.getClickedBlock()).getLocation();
 
        // System.out.println("[Waystones Debugger] Player Interact Event. "+ p.getUniqueId() + " | "+ loc);
 
@@ -114,7 +115,9 @@ public class Events implements Listener {
     public void onInvClick(InventoryClickEvent e){
         Player p = (Player) e.getWhoClicked();
         ItemStack item = e.getCurrentItem();
-
+        if(item == null || item.isEmpty() || !item.hasItemMeta()){
+            return;
+        }
         //System.out.println("[Waystones Debugger] Inv Click Event. "+p.getUniqueId() + " | "+item.getType());
 
         if(e.getView().getTitle().contains("Waystones")){
@@ -131,18 +134,25 @@ public class Events implements Listener {
                         Waystones.locationconf.load(Waystones.locFile);
 
                         Location loc = Waystones.locationconf.getLocation("locations."+idstr+".tplocation");
+                        if (loc == null) {
+                            p.sendMessage(TextColor.color(255,0,0) + "Error: No location found for " + idstr);
+                            return;
+                        }
                         p.teleport(loc);
 
+
                     } catch (IOException | InvalidConfigurationException exc) {
-                        exc.printStackTrace();
+                        PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Configuration file not found, not accessible or invalid.");
                     }
                 }
                 NamespacedKey nakey = new NamespacedKey(Waystones.instance, "navarrow");
+                NamespacedKey currentWaystoneKey = new NamespacedKey(Waystones.instance, "currentwaystone");
                 if (container.has(nakey, PersistentDataType.INTEGER)){
                     PersistentDataContainer arrowcontainer = meta.getPersistentDataContainer();
                     int pageid = arrowcontainer.get(nakey, PersistentDataType.INTEGER);
-                    System.out.println(pageid);
-                    Waystones.openMenu(p, "", pageid);
+                    String currentWaystoneId = arrowcontainer.get(currentWaystoneKey, PersistentDataType.STRING);
+                    // System.out.println(pageid);
+                    Waystones.openMenu(p, currentWaystoneId, pageid);
                 }
             }else{
                 PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Meta is null.");
@@ -177,7 +187,7 @@ public class Events implements Listener {
                     }
                 }
             } catch (IOException | InvalidConfigurationException exc) {
-                exc.printStackTrace();
+                PluginLogger.getLogger("TeaWaystones").log(Level.WARNING, "Configuration file not found, not accessible or invalid.");
             }
         }
     }

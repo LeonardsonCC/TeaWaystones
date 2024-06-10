@@ -35,13 +35,15 @@ public class twCommand implements CommandExecutor {
                             String name = args[1];
                             String id = "";
                             for (String path : Waystones.locationconf.getConfigurationSection("locations").getKeys(false)) {
-                                if (((Player) sender).getLocation().distance(Waystones.locationconf.getLocation("locations." + path + ".location").toCenterLocation()) < 2) {
+                                Location possibleWaystoneLocation = Waystones.locationconf.getLocation("locations." + path + ".location").toCenterLocation();
+                                Location playerLocation = ((Player) sender).getLocation();
+                                if(possibleWaystoneLocation.getWorld().equals(playerLocation.getWorld()) && playerLocation.distance(possibleWaystoneLocation) < 2) {
                                     id = path;
                                 }
                             }
                             if(id.isBlank()){
                                 sender.sendMessage(Component.text("There is no waystone near you.").color(TextColor.color(255, 0, 0)));
-                                return false;
+                                return true;
                             }
 
                             try {
@@ -77,7 +79,9 @@ public class twCommand implements CommandExecutor {
                                 String value = args[1];
                                 String id = "";
                                 for (String path : Waystones.locationconf.getConfigurationSection("locations").getKeys(false)) {
-                                    if (((Player) sender).getLocation().distance(Waystones.locationconf.getLocation("locations." + path + ".location").toCenterLocation()) < 2) {
+                                    Location possibleWaystoneLocation = Waystones.locationconf.getLocation("locations." + path + ".location").toCenterLocation();
+                                    Location playerLocation = ((Player) sender).getLocation();
+                                    if(possibleWaystoneLocation.getWorld().equals(playerLocation.getWorld()) && playerLocation.distance(possibleWaystoneLocation) < 2) {
                                         id = path;
                                     }
                                 }
@@ -115,8 +119,10 @@ public class twCommand implements CommandExecutor {
                             for (String path : Waystones.locationconf.getConfigurationSection("locations").getKeys(false)) {
                                 Location tplocation = Waystones.locationconf.getLocation("locations." + path + ".tplocation");
                                 List<String> visitedBy = Waystones.locationconf.getStringList("locations." + path + ".visitedBy");
+                                if(tplocation == null)
+                                    continue;
                                 text = text.appendNewline();
-                                text = text.append(Component.text(Waystones.locationconf.getString("locations." + path + ".name")+" ("+path+") "+tplocation.toString()+" "+visitedBy).color(NamedTextColor.GREEN).clickEvent(ClickEvent.runCommand("/tp @s "+tplocation.x()+" "+tplocation.y()+" "+tplocation.z()+" "+tplocation.getYaw()+" "+tplocation.getPitch())));
+                                text = text.append(Component.text(Waystones.locationconf.getString("locations." + path + ".name")+" ("+path+") "+ (tplocation != null ? tplocation.toString() : TextColor.color(255,0,0)+"unknown location") +" "+visitedBy).color(NamedTextColor.GREEN).clickEvent(ClickEvent.runCommand("/tp @s "+tplocation.x()+" "+tplocation.y()+" "+tplocation.z()+" "+tplocation.getYaw()+" "+tplocation.getPitch())));
                             }
                             sender.sendMessage(text);
                             return true;

@@ -48,6 +48,10 @@ public class Waystones extends JavaPlugin {
                   List<String> ss = locationconf.getConfigurationSection("locations").getKeys(false).stream().sorted(Waystones::compareWaystone).toList();
                   List<List<String>> lss = getSubsetsBySize(ss, 53);
                   // printSetList(lss);
+                  if(lss.isEmpty()) {
+                        p.sendMessage(Component.text("Error: No waystones found.").color(TextColor.color(255,0,0)));
+                        return;
+                  }
                   if(lss.size() < page+1){
                         p.sendMessage(Component.text("Error: Page not found.").color(TextColor.color(255,0,0)));
                         return;
@@ -57,32 +61,28 @@ public class Waystones extends JavaPlugin {
                         List<String> visitedBy = Waystones.locationconf.getStringList("locations." + path + ".visitedBy");
                         boolean isPublic = locationconf.getBoolean("locations." + path + ".public");
                         if (visitedBy.contains(p.getUniqueId().toString()) || isPublic) {
-                              if(true) {
-                                    ItemStack item = new ItemStack(Material.BEACON);
-                                    item.setAmount(1);
-                                    ItemMeta meta = item.getItemMeta();
-                                    NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
-                                    meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, path);
-                                    meta.displayName(Component.text("Waystone - "+name).color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
-                                    List<Component> lore = new ArrayList<>();
-                                    if(p.hasPermission("waystones.menu.seeWaystoneIds")){
-                                          lore.add(Component.text("ID: "+path).color(NamedTextColor.GRAY));
-                                    }
-                                    if(isPublic){
-                                          lore.add(Component.text("Public").color(NamedTextColor.DARK_PURPLE).decoration(TextDecoration.ITALIC, false));
-                                    }
-                                    if (currentWaystoneId.equals(path)) {
-                                          meta.addEnchant(Enchantment.MENDING, 1, false);
-                                          meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                                          lore.add(Component.text("You are here.").color(TextColor.color(145, 229, 110)).decoration(TextDecoration.ITALIC, false));
-                                    }
-                                    meta.lore(lore);
-                                    item.setItemMeta(meta);
-                                    inv.setItem(i, item);
-                                    i++;
-                              }
-
-
+                            ItemStack item = new ItemStack(Material.BEACON);
+                            item.setAmount(1);
+                            ItemMeta meta = item.getItemMeta();
+                            NamespacedKey key = new NamespacedKey(Waystones.instance, "waystoneid");
+                            meta.getPersistentDataContainer().set(key, PersistentDataType.STRING, path);
+                            meta.displayName(Component.text("Waystone - "+name).color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
+                            List<Component> lore = new ArrayList<>();
+                            if(p.hasPermission("waystones.menu.seeWaystoneIds")){
+                                  lore.add(Component.text("ID: "+path).color(NamedTextColor.GRAY));
+                            }
+                            if(isPublic){
+                                  lore.add(Component.text("Public").color(NamedTextColor.DARK_PURPLE).decoration(TextDecoration.ITALIC, false));
+                            }
+                            if (currentWaystoneId.equals(path)) {
+                                  meta.addEnchant(Enchantment.MENDING, 1, false);
+                                  meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                                  lore.add(Component.text("You are here.").color(TextColor.color(145, 229, 110)).decoration(TextDecoration.ITALIC, false));
+                            }
+                            meta.lore(lore);
+                            item.setItemMeta(meta);
+                            inv.setItem(i, item);
+                            i++;
                         }
                   }
 
@@ -91,6 +91,7 @@ public class Waystones extends JavaPlugin {
                   item.setAmount(1);
                   ItemMeta meta = item.getItemMeta();
                   NamespacedKey key = new NamespacedKey(Waystones.instance, "navarrow");
+                  NamespacedKey currentWaystoneKey = new NamespacedKey(Waystones.instance, "currentwaystone");
 
                   if(lss.get(page).size() == 53) {
                         meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, page+1);
@@ -99,6 +100,7 @@ public class Waystones extends JavaPlugin {
                         meta.getPersistentDataContainer().set(key, PersistentDataType.INTEGER, 0);
                         meta.displayName(Component.text("First Page").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false));
                   }
+                  meta.getPersistentDataContainer().set(currentWaystoneKey, PersistentDataType.STRING, currentWaystoneId);
                   meta.addEnchant(Enchantment.MENDING, 1, false);
                   meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
                   meta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
