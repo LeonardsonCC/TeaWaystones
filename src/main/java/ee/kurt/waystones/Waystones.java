@@ -1,5 +1,6 @@
 package ee.kurt.waystones;
 
+import ee.kurt.waystones.model.SortCriteria;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
@@ -29,6 +30,8 @@ public class Waystones extends JavaPlugin {
       public static File locFile = new File("plugins//TeaWaystones//locations.yml");
       public static YamlConfiguration locationconf;
       public static Waystones instance;
+      public static WaystoneManager manager = WaystoneManager.getInstance();
+      public static SortCriteria sortby = SortCriteria.NAME;
 
 
       public static String generateString(Random rng, String characters, int length) {
@@ -174,14 +177,16 @@ public class Waystones extends JavaPlugin {
             System.out.println("=== END SET ===");
       }
 
+      @Override
       public void onEnable() {
             if(!path.exists()) path.mkdir();
             if(!locFile.exists()) this.saveResource("locations.yml", true);
             locationconf = YamlConfiguration.loadConfiguration(locFile);
             instance = this;
+            manager.loadFromFile();
 
-            getCommand("tw").setExecutor(new twCommand());
-            Bukkit.getPluginManager().registerEvents(new Events(), this);
+            getCommand("tw").setExecutor(new twCommandEx());
+            Bukkit.getPluginManager().registerEvents(new EventsEx(), this);
 
             ItemStack waystone = new ItemStack(Material.BEACON, 1);
             ItemMeta meta = waystone.getItemMeta();
@@ -199,5 +204,11 @@ public class Waystones extends JavaPlugin {
             waystonerec.setIngredient('B', Material.LIGHT_BLUE_CANDLE);
 
             getServer().addRecipe(waystonerec);
+      }
+
+
+      @Override
+      public void onDisable() {
+            manager.saveToFile();
       }
 }
