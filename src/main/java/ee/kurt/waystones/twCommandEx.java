@@ -20,7 +20,6 @@ import java.util.Locale;
 import static java.lang.Integer.parseInt;
 
 
-// TODO
 public class twCommandEx implements CommandExecutor {
 
     @Override
@@ -111,6 +110,12 @@ public class twCommandEx implements CommandExecutor {
                     case "loadfromfile":
                         if(sender.hasPermission("waystones.command.reload") || sender.isOp()) {
                             Waystones.manager.reload();
+                            return true;
+                        }
+                        return false;
+                    case "savetofile":
+                        if(sender.hasPermission("waystones.command.reload") || sender.isOp()) {
+                            Waystones.manager.saveToFile();
                             return true;
                         }
                         return false;
