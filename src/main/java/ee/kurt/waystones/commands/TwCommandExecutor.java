@@ -1,5 +1,6 @@
-package ee.kurt.waystones;
+package ee.kurt.waystones.commands;
 
+import ee.kurt.waystones.Waystones;
 import ee.kurt.waystones.model.Waystone;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
@@ -9,18 +10,16 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
 import static java.lang.Integer.parseInt;
 
 
-public class twCommandEx implements CommandExecutor {
+public class TwCommandExecutor implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, String label, String[] args) {
@@ -31,7 +30,7 @@ public class twCommandEx implements CommandExecutor {
                 return true;
             }
                 switch (args[0].toLowerCase(Locale.ROOT)) {
-                    case "setname":
+                    case TwCommandOptions.setName:
                         if(args.length == 2) {
                             String name = args[1];
                             Waystone targetWaystone = Waystones.manager.getClosestWaystone(((Player) sender).getLocation());
@@ -46,7 +45,7 @@ public class twCommandEx implements CommandExecutor {
                             return true;
                         }
                         break;
-                    case "openui":
+                    case TwCommandOptions.openUI:
                         if(sender.isOp() || sender.hasPermission("waystones.command.openui")){
                             int page = 0;
                             if(args.length >= 2 && args[1] != null) {
@@ -61,7 +60,7 @@ public class twCommandEx implements CommandExecutor {
                             sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
                         }
                         return true;
-                    case "setpublic":
+                    case TwCommandOptions.setPublic:
                         if(sender.isOp() || sender.hasPermission("waystones.command.setpublic")){
                             if(args.length == 2) {
                                 String value = args[1];
@@ -90,7 +89,7 @@ public class twCommandEx implements CommandExecutor {
                             return true;
                         }
                         break;
-                    case "list":
+                    case TwCommandOptions.list:
                         if(sender.hasPermission("waystones.command.list")) {
                             Component text = Component.text("=== List of Waystones ===").color(NamedTextColor.GREEN);
                             for (Waystone waystone : Waystones.manager.getAllWaystones()) {
@@ -107,13 +106,13 @@ public class twCommandEx implements CommandExecutor {
                             sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
                             return true;
                         }
-                    case "loadfromfile":
+                    case TwCommandOptions.loadFromFile:
                         if(sender.hasPermission("waystones.command.reload") || sender.isOp()) {
                             Waystones.manager.reload();
                             return true;
                         }
                         return false;
-                    case "savetofile":
+                    case TwCommandOptions.saveToFile:
                         if(sender.hasPermission("waystones.command.reload") || sender.isOp()) {
                             Waystones.manager.saveToFile();
                             return true;
