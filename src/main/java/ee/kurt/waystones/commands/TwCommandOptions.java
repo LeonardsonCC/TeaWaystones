@@ -9,6 +9,7 @@ public class TwCommandOptions {
     public static final String list = "list";
     public static final String loadFromFile = "loadfromfile";
     public static final String saveToFile = "savetofile";
+    public static final String clearAll = "clearall";
 
-    public static final List<String> all = List.of(setName, setPublic, openUI, list, loadFromFile, saveToFile);
+    public static final List<String> all = List.of(setName, setPublic, openUI, list, loadFromFile, saveToFile, clearAll);
 }

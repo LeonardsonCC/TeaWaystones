@@ -209,6 +209,13 @@ public class WaystoneManager {
         return waystones;
     }
 
+    public void clearAll(Player player) {
+        List<Waystone> waystones = getWaystoneListForPlayer(player);
+        for (Waystone waystone : waystones) {
+            deleteWaystone(waystone);
+        }
+    }
+
     public void reload() {
         waystones.clear();
         this.loadFromFile();

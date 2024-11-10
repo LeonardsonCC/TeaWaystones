@@ -118,6 +118,12 @@ public class TwCommandExecutor implements CommandExecutor {
                             return true;
                         }
                         return false;
+                    case TwCommandOptions.clearAll:
+                        if(sender.hasPermission("waystones.command.clearAll") || sender.isOp()) {
+                            Waystones.manager.clearAll((Player) sender);
+                            return true;
+                        }
+                        return false;
                 }
         }
         sender.sendMessage(Component.text("Syntax: \n/tw setname <name>\n/tw setpublic <true/false>\n/tw openui [page]\n/tw list").color(TextColor.color(255, 0, 0)));
