@@ -8,6 +8,9 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -19,6 +22,8 @@ import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -185,7 +190,23 @@ public class Waystones extends JavaPlugin {
             instance = this;
             manager.loadFromFile();
 
+            getCommand("tw").setTabCompleter(
+                    new TabCompleter() {
+                          @Override
+                          public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
+                                final List<String> completions = new ArrayList<String>();
+
+                                if (args.length == 1) {
+                                    completions.addAll(List.of("setname", "setpublic", "openui", "list"));
+                                    return completions;
+                                }
+
+                                return completions;
+                          }
+                    }
+            );
             getCommand("tw").setExecutor(new twCommandEx());
+
             Bukkit.getPluginManager().registerEvents(new EventsEx(), this);
 
             ItemStack waystone = new ItemStack(Material.BEACON, 1);
