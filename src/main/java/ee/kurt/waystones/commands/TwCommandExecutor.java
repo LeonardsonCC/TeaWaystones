@@ -25,106 +25,125 @@ public class TwCommandExecutor implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             // /tw setname <id> <name>
-            if(args.length == 0) {
+            if (args.length == 0) {
                 sender.sendMessage(Component.text("Syntax: \n/tw setname <name>\n/tw setpublic <true/false>\n/tw openui [page]\n/tw list").color(TextColor.color(255, 0, 0)));
                 return true;
             }
-                switch (args[0].toLowerCase(Locale.ROOT)) {
-                    case TwCommandOptions.setName:
-                        if(args.length == 2) {
-                            String name = args[1];
+            switch (args[0].toLowerCase(Locale.ROOT)) {
+                case TwCommandOptions.setName:
+                    if (args.length == 2) {
+                        String name = args[1];
+                        Waystone targetWaystone = Waystones.manager.getClosestWaystone(((Player) sender).getLocation());
+
+                        if (targetWaystone == null) {
+                            sender.sendMessage(Component.text("There is no waystone near you.").color(TextColor.color(255, 0, 0)));
+                            return true;
+                        }
+
+                        targetWaystone.setName(name);
+                        sender.sendMessage("§aSuccessfully set the name of the waystone §o" + targetWaystone.getId() + "§a to §o" + name + "§a.");
+                        return true;
+                    }
+                    if (args.length == 3) {
+                        String target = args[1];
+                        String name = args[2];
+                        Waystone targetWaystone = Waystones.manager
+                                .getWaystoneListForPlayer((Player) sender)
+                                .stream()
+                                .filter(waystone -> waystone.getName().equals(target))
+                                .toList()
+                                .get(0);
+
+                        if (targetWaystone == null) {
+                            sender.sendMessage(Component.text("There is no waystone with name: " + target).color(TextColor.color(255, 0, 0)));
+                            return true;
+                        }
+                        targetWaystone.setName(name);
+                        sender.sendMessage("§aSuccessfully set the name of the waystone §o" + targetWaystone.getId() + "§a to §o" + name + "§a.");
+
+                        return true;
+                    }
+                    break;
+                case TwCommandOptions.openUI:
+                    if (sender.isOp() || sender.hasPermission("waystones.command.openui")) {
+                        int page = 0;
+                        if (args.length >= 2 && args[1] != null) {
+                            try {
+                                page = parseInt(args[1]);
+                            } catch (NumberFormatException e) {
+                                sender.sendMessage(Component.text("Error: Not a number!").color(TextColor.color(255, 0, 0)));
+                            }
+                        }
+                        Waystones.manager.openMenu((Player) sender, null, page);
+                    } else {
+                        sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
+                    }
+                    return true;
+                case TwCommandOptions.setPublic:
+                    if (sender.isOp() || sender.hasPermission("waystones.command.setpublic")) {
+                        if (args.length == 2) {
+                            String value = args[1];
+
                             Waystone targetWaystone = Waystones.manager.getClosestWaystone(((Player) sender).getLocation());
 
-                            if(targetWaystone == null){
+                            if (targetWaystone == null) {
                                 sender.sendMessage(Component.text("There is no waystone near you.").color(TextColor.color(255, 0, 0)));
                                 return true;
                             }
 
-                            targetWaystone.setName(name);
-                            sender.sendMessage("§aSuccessfully set the name of the waystone §o"+targetWaystone.getId()+"§a to §o"+name+"§a.");
+                            boolean boolvalue = false;
+
+                            if (value.equalsIgnoreCase("true")) {
+                                boolvalue = true;
+                                sender.sendMessage("§aSuccessfully set the visibility of waystone §o" + targetWaystone.getName() + "§a (§o" + targetWaystone.getId() + "§a) to public. Everyone will be able to travel to this waystone, regardless of weather they used it before.");
+                            } else {
+                                sender.sendMessage("§aSuccessfully set the visibility of waystone §o" + targetWaystone.getName() + "§a (§o" + targetWaystone.getId() + "§a) to private. Only people who already used this waystone will be able to travel to it.");
+                            }
+
+                            targetWaystone.setPublic(boolvalue);
                             return true;
                         }
-                        break;
-                    case TwCommandOptions.openUI:
-                        if(sender.isOp() || sender.hasPermission("waystones.command.openui")){
-                            int page = 0;
-                            if(args.length >= 2 && args[1] != null) {
-                                try {
-                                    page = parseInt(args[1]);
-                                } catch (NumberFormatException e){
-                                    sender.sendMessage(Component.text("Error: Not a number!").color(TextColor.color(255,0,0)));
-                                }
-                            }
-                            Waystones.manager.openMenu((Player) sender, null, page);
-                        } else {
-                            sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
-                        }
+                    } else {
+                        sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
                         return true;
-                    case TwCommandOptions.setPublic:
-                        if(sender.isOp() || sender.hasPermission("waystones.command.setpublic")){
-                            if(args.length == 2) {
-                                String value = args[1];
-
-                                Waystone targetWaystone = Waystones.manager.getClosestWaystone(((Player) sender).getLocation());
-
-                                if(targetWaystone == null){
-                                    sender.sendMessage(Component.text("There is no waystone near you.").color(TextColor.color(255, 0, 0)));
-                                    return true;
-                                }
-
-                                boolean boolvalue = false;
-
-                                if(value.equalsIgnoreCase("true")) {
-                                    boolvalue = true;
-                                    sender.sendMessage("§aSuccessfully set the visibility of waystone §o"+targetWaystone.getName()+"§a (§o"+targetWaystone.getId()+"§a) to public. Everyone will be able to travel to this waystone, regardless of weather they used it before.");
-                                }else{
-                                    sender.sendMessage("§aSuccessfully set the visibility of waystone §o"+targetWaystone.getName()+"§a (§o"+targetWaystone.getId()+"§a) to private. Only people who already used this waystone will be able to travel to it.");
-                                }
-
-                                targetWaystone.setPublic(boolvalue);
-                                return true;
-                            }
-                        } else {
-                            sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
-                            return true;
+                    }
+                    break;
+                case TwCommandOptions.list:
+                    if (sender.hasPermission("waystones.command.list")) {
+                        Component text = Component.text("=== List of Waystones ===").color(NamedTextColor.GREEN);
+                        for (Waystone waystone : Waystones.manager.getAllWaystones()) {
+                            Location tplocation = waystone.getTplocation();
+                            List<String> visitedBy = waystone.getVisitedBy();
+                            if (tplocation == null)
+                                continue;
+                            text = text.appendNewline();
+                            text = text.append(Component.text(waystone.getName() + " (" + waystone.getId() + ") " + (tplocation != null ? tplocation.toString() : TextColor.color(255, 0, 0) + "unknown location") + " " + visitedBy).color(NamedTextColor.GREEN).clickEvent(ClickEvent.runCommand("/tp @s " + tplocation.x() + " " + tplocation.y() + " " + tplocation.z() + " " + tplocation.getYaw() + " " + tplocation.getPitch())));
                         }
-                        break;
-                    case TwCommandOptions.list:
-                        if(sender.hasPermission("waystones.command.list")) {
-                            Component text = Component.text("=== List of Waystones ===").color(NamedTextColor.GREEN);
-                            for (Waystone waystone : Waystones.manager.getAllWaystones()) {
-                                Location tplocation = waystone.getTplocation();
-                                List<String> visitedBy = waystone.getVisitedBy();
-                                if(tplocation == null)
-                                    continue;
-                                text = text.appendNewline();
-                                text = text.append(Component.text(waystone.getName()+" ("+waystone.getId()+") "+ (tplocation != null ? tplocation.toString() : TextColor.color(255,0,0)+"unknown location") +" "+visitedBy).color(NamedTextColor.GREEN).clickEvent(ClickEvent.runCommand("/tp @s "+tplocation.x()+" "+tplocation.y()+" "+tplocation.z()+" "+tplocation.getYaw()+" "+tplocation.getPitch())));
-                            }
-                            sender.sendMessage(text);
-                            return true;
-                        } else {
-                            sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
-                            return true;
-                        }
-                    case TwCommandOptions.loadFromFile:
-                        if(sender.hasPermission("waystones.command.reload") || sender.isOp()) {
-                            Waystones.manager.reload();
-                            return true;
-                        }
-                        return false;
-                    case TwCommandOptions.saveToFile:
-                        if(sender.hasPermission("waystones.command.reload") || sender.isOp()) {
-                            Waystones.manager.saveToFile();
-                            return true;
-                        }
-                        return false;
-                    case TwCommandOptions.clearAll:
-                        if(sender.hasPermission("waystones.command.clearAll") || sender.isOp()) {
-                            Waystones.manager.clearAll((Player) sender);
-                            return true;
-                        }
-                        return false;
-                }
+                        sender.sendMessage(text);
+                        return true;
+                    } else {
+                        sender.sendMessage(Component.text("Permission denied.").color(TextColor.color(255, 0, 0)));
+                        return true;
+                    }
+                case TwCommandOptions.loadFromFile:
+                    if (sender.hasPermission("waystones.command.reload") || sender.isOp()) {
+                        Waystones.manager.reload();
+                        return true;
+                    }
+                    return false;
+                case TwCommandOptions.saveToFile:
+                    if (sender.hasPermission("waystones.command.reload") || sender.isOp()) {
+                        Waystones.manager.saveToFile();
+                        return true;
+                    }
+                    return false;
+                case TwCommandOptions.clearAll:
+                    if (sender.hasPermission("waystones.command.clearAll") || sender.isOp()) {
+                        Waystones.manager.clearAll((Player) sender);
+                        return true;
+                    }
+                    return false;
+            }
         }
         sender.sendMessage(Component.text("Syntax: \n/tw setname <name>\n/tw setpublic <true/false>\n/tw openui [page]\n/tw list").color(TextColor.color(255, 0, 0)));
         return true;

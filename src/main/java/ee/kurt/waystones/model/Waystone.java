@@ -50,6 +50,7 @@ public class Waystone implements Comparable {
         this.isPublic = false;
         this.visitedBy = new ArrayList<>();
         this.id = Waystones.generateString(new Random(), "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 10);
+        this.name = id;
     }
 
     public static Waystone createWaystone(String id, String name, boolean isPublic, List<String> visitedBy, Location location, Location tplocation, int sortorder) {
@@ -141,6 +142,9 @@ public class Waystone implements Comparable {
     }
 
     public String getName() {
+        if (name == null) {
+            return id;
+        }
         return name;
     }
 
